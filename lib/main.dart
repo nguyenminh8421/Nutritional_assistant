@@ -21,6 +21,7 @@ class Home extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            
             Image.asset('assets/logo1.png',width: 130, height: 130,),
 
             const SizedBox(height: 20), 
