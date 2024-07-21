@@ -1,40 +1,51 @@
+import 'package:demo_1/database/database_helper.dart';
+import 'package:demo_1/screen/home/home.dart';
+import 'package:demo_1/screen/intro/intro.dart';
+import 'package:demo_1/database/food_database.dart'; // Import UsersDatabaseHelper
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:demo_1/database/notification_helper.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
-void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Home(),
-    );
-  }
+void main() async{
+  runApp(MyApp());
+  
 }
 
-class Home extends StatelessWidget {
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            
-            Image.asset('assets/logo1.png',width: 130, height: 130,),
-
-            const SizedBox(height: 20), 
-
-            Text("BKalo", style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold ),),
-
-            SizedBox(height: 20),
-
-            Text('Tính toán chỉ số BMI và nhận ngay lộ trình để có cuộc sống khỏe mạnh hơn!', style: TextStyle(fontSize: 18),)
-          ],
-        ),
-
-      ), 
+    return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: FutureBuilder<bool>(
+        future: checkUserExistsAndCreateMeals(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator()); 
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+          
+           if (snapshot.data == true) {
+              print('User exists'); // Thêm log
+              return HomeScreen(); // Nếu có bất kỳ user nào tồn tại
+            } else {
+              print('No user exists'); // Thêm log
+              return Home(); // Nếu không có user nào tồn tại
+            }
+          }
+        },
+      ),
     );
+  }
+
+  Future<bool> checkUserExistsAndCreateMeals() async {
+    UsersDatabaseHelper dbHelper = UsersDatabaseHelper();
+    await dbHelper.checkAndCreateMealsForToday(); // Gọi hàm kiểm tra và tạo meals cho ngày hiện tại
+    return await dbHelper.userExists();
   }
 }
